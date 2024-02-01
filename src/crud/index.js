@@ -4,6 +4,19 @@ export function getNewStore(){
   return {
     collectionList: new Map(),
 
+    load(data){
+      for(let collectionName in data){
+        this.collectionList.set(collectionName, new Map(data[collectionName]));
+      }
+    },
+    save(){
+      let save = {};
+      for(let collectionName of this.collectionList.keys()){
+        save[collectionName] = Array.from(this.collectionList.get(collectionName).values());
+      }
+      return save;
+    },
+
     asCollection(collectionName) {
       return this.collectionList.has(collectionName);
     },
