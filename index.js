@@ -16,11 +16,7 @@ pulsar.initServer(wss);
 
 const store = getNewStore();
 
-createCrudServer(store, pulsar);
-
-
-
-
+const crudServ = createCrudServer(store, pulsar);
 
 createServer(function (req, res) {
   try {
@@ -48,7 +44,7 @@ createServer(function (req, res) {
 
 
 function writeSave(name){
-  let data = store.save();
+  let data = crudServ.save();
   writeFile(`./saves/${name ? name : "data"}.json`, JSON.stringify(data, null, 4), (err) => {
     if (err) {
       console.error("couldn't save datas", err);
@@ -65,7 +61,7 @@ function loadSave(saveName){
       console.error("couldn't read data", err);
     }else{
       let datas = JSON.parse(data);
-      store.load(datas);
+      crudServ.load(datas);
     }
   });
 }

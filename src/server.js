@@ -90,4 +90,22 @@ export function createCrudServer(store, pulsar) {
   }
 
   pulsar.registerAction(actions);
+
+  return {
+    save() {
+      return store.save();
+    },
+    load(data) {
+      store.load(data);
+      for (let collectionName in data) {
+        if (!pulsar.dataSources[collectionName]) {
+          pulsar.registerDataPoints({
+            [collectionName]: (userId) => {
+              return getCollection(store, collectionName);
+            }
+          });
+        }
+      }
+    }
+  }
 }
