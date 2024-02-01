@@ -1,107 +1,118 @@
 import { endTiming, startTiming } from "../utils.js";
 import { connectionManager } from "./connectionManager.js";
 
-const serverActions = {};
-const dataSources = {};
 
-export function initServer(wss) {
-  wss.on('connection', (socket) => {
-    socket.on('message', (message) => {
-      receiveMessageAndDispatch(message, socket)
+export default {
+
+  serverActions:{},
+  dataSources:{},
+
+  initServer(wss) {
+    wss.on('connection', (socket) => {
+      socket.on('message', (message) => {
+        this._receiveMessageAndDispatch(message, socket)
+      });
+      socket.on('close', () => {
+        this._closeConnection(socket);
+      });
     });
-    socket.on('close', () => {
-      closeConnection(socket);
-    });
-  });
-}
-
-export function registerAction(actions) {
-  for (let action in actions) {
-    serverActions[action] = actions[action];
-  }
-}
-
-export function registerDataPoints(newDataSources) {
-  for (let dataSource in newDataSources) {
-    dataSources[dataSource] = newDataSources[dataSource];
-  }
-}
-
-export function broadcastDataPoint(userList, pointName) {
-  if (!dataSources[pointName]) {
-    throw new Error(`No datasource for data point "${pointName}"`);
-  }
-  if(!Array.isArray(userList)){
-    userList = [userList];
-  }
-  for (let userId of userList) {
-    let datas = dataSources[pointName](userId);
-    connectionManager.getConnection(userId).send(JSON.stringify({
-      type: pointName,
-      data: datas
-    }));
-  }
-}
-
-function closeConnection(socket) {
-  connectionManager.removeConnection(socket);
-}
-
-function receiveMessageAndDispatch(message, socket) {
-
-  try {
-    const parsedMessage = JSON.parse(message)
-    console.log("parsed message : ", parsedMessage);
-
-    let timeInfos = startTiming("Socket message : "+parsedMessage.type);
-    switch (parsedMessage.type) {
-      case "action":
-        actionConsummer(parsedMessage, socket);
-        break;
-      case "handshake":
-        handshakeConsummer(parsedMessage, socket);
-        break;
-      default:
-        dataConsummer(parsedMessage, socket);
+  },
+  
+  registerAction(actions) {
+    for (let action in actions) {
+      this.serverActions[action] = actions[action];
     }
-    endTiming(timeInfos);
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-function actionConsummer(message, socket) {
-  let userId = connectionManager.getUserId(socket);
-  try {
-    if(!serverActions[message.name]){
-      throw new Error(`no server action named "${message.name}"`)
+  },
+  
+  registerDataPoints(newDataSources) {
+    for (let dataSource in newDataSources) {
+      this.dataSources[dataSource] = newDataSources[dataSource];
     }
-    let response = {
-      type: "actionResponse",
-      data: serverActions[message.name](userId, message.params),
-      actionId: message.actionId
+  },
+  
+  broadcastDataPoint(userList, pointName) {
+    if (!this.dataSources[pointName]) {
+      throw new Error(`No datasource for data point "${pointName}"`);
     }
-    socket.send(JSON.stringify(response));
-  } catch (e) {
-    console.warn('action erreur : ', e);
-    let response = {
-      type: "actionResponse",
-      data: "error",
-      actionId: message.actionId
+    if(!Array.isArray(userList)){
+      userList = [userList];
     }
-    socket.send(JSON.stringify(response));
-  }
-}
+    for (let userId of userList) {
+      let datas = this.dataSources[pointName](userId);
+      connectionManager.getConnection(userId).send(JSON.stringify({
+        type: pointName,
+        data: datas
+      }));
+    }
+  },
+  
+  _closeConnection(socket) {
+    connectionManager.removeConnection(socket);
+  },
+  
+  _receiveMessageAndDispatch(message, socket) {
+  
+    try {
+      const parsedMessage = JSON.parse(message)
+      console.log("parsed message : ", parsedMessage);
+  
+      let timeInfos = startTiming("Socket message : "+parsedMessage.type);
+      switch (parsedMessage.type) {
+        case "action":
+          this._actionConsummer(parsedMessage, socket);
+          break;
+        case "handshake":
+          this._handshakeConsummer(parsedMessage, socket);
+          break;
+        default:
+          this._dataConsummer(parsedMessage, socket);
+      }
+      endTiming(timeInfos);
+    } catch (e) {
+      console.error(e);
+    }
+  },
+  
+  _actionConsummer(message, socket) {
+    let userId = connectionManager.getUserId(socket);
+    try {
+      if(!this.serverActions[message.name]){
+        throw new Error(`no server action named "${message.name}"`)
+      }
+      let response = {
+        type: "actionResponse",
+        data: this.serverActions[message.name](userId, message.params),
+        actionId: message.actionId
+      }
+      socket.send(JSON.stringify(response));
+    } catch (e) {
+      console.warn('action erreur : ', e);
+      let response = {
+        type: "actionResponse",
+        data: "error",
+        actionId: message.actionId
+      }
+      socket.send(JSON.stringify(response));
+    }
+  },
 
-function dataConsummer(message, socket) {
-  let userId = connectionManager.getUserId(socket);
-  broadcastDataPoint(userId, message.type)
-}
-
-function handshakeConsummer(message, socket) {
-  let userId = message.params;
-  if (!userId) {
-    throw new Error(`handshake without userId`)
-  }
-  connectionManager.addConnection(socket, userId);
+  registerDataConsummerAddon(dataConsummerAddon){
+    this._dataConsummerAddon = dataConsummerAddon;
+  },
+  
+  _dataConsummer(message, socket) {
+    let userId = connectionManager.getUserId(socket);
+    if(this._dataConsummerAddon){
+      this._dataConsummerAddon(userId, message.type);
+    }
+    this.broadcastDataPoint(userId, message.type);
+  },
+  
+  _handshakeConsummer(message, socket) {
+    let userId = message.params;
+    if (!userId) {
+      throw new Error(`handshake without userId`)
+    }
+    connectionManager.addConnection(socket, userId);
+  },
 }

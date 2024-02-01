@@ -1,23 +1,15 @@
 "use strict"
 import { WebSocketServer } from 'ws';
 import { getNewStore } from './src/crud/index.js';
-import { broadcastDataPoint, initServer, registerAction, registerDataPoints } from './src/pulsar/index.js';
+import pulsar from './src/pulsar/index.js';
 import { createCrudServer } from './src/server.js';
 
 const serverPort = 8080;
 const wss = new WebSocketServer({
   port: serverPort
 });
-initServer(wss);
 
-const pulsar = {
-  registerDataPoints,
-  registerAction,
-  broadcastDataPoint
-}
-
-// registerDataPoints({});
-// registerAction({});
+pulsar.initServer(wss);
 
 const store = getNewStore();
 
