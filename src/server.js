@@ -13,7 +13,7 @@ export function createCrudServer(store, pulsar){
   pulsar.registerDataPoints(dataPoints);
 
   let actions = {
-    updateDoc(userId, collectionName, documentId, documentData) {
+    updateDoc(userId, {collectionName, documentId, documentData}) {
       if(!store.asCollection(collectionName)){
         store.createCollection(collectionName);
         pulsar.registerDataPoints({
@@ -25,7 +25,7 @@ export function createCrudServer(store, pulsar){
       store.updateDocumentInCollection(collectionName, documentId, documentData);
       pulsar.broadcastDataPoint(userId, collectionName);
     },
-    deleteDoc(userId, collectionName, documentId) {
+    deleteDoc(userId, {collectionName, documentId}) {
       if(!store.asCollection(collectionName)){
         store.createCollection(collectionName);
         pulsar.registerDataPoints({
@@ -37,7 +37,7 @@ export function createCrudServer(store, pulsar){
       store.deleteDocumentInCollection(collectionName, documentId);
       pulsar.broadcastDataPoint(userId, collectionName);
     },
-    createDoc(userId, collectionName, documentData) {
+    createDoc(userId, {collectionName, documentData}) {
       if(!store.asCollection(collectionName)){
         store.createCollection(collectionName);
         pulsar.registerDataPoints({
@@ -47,18 +47,6 @@ export function createCrudServer(store, pulsar){
         });
       }
       store.createDocumentInCollection(collectionName, documentData);
-      pulsar.broadcastDataPoint(userId, collectionName);
-    },
-    createCollection(userId, collectionName) {
-      if(!store.asCollection(collectionName)){
-        store.createCollection(collectionName);
-        pulsar.registerDataPoints({
-          [collectionName]: (userId) => {
-            return store.getCollection(collectionName);
-          }
-        });
-      }
-      store.createCollection(collectionName);
       pulsar.broadcastDataPoint(userId, collectionName);
     },
     deleteCollection(userId, collectionName) {
