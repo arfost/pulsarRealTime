@@ -1,21 +1,18 @@
 
 function getCollection(store, path) {
   let [collectionName, documentId, ...nodes] = path.split("/");
-  console.log("getReq : ", collectionName, documentId, nodes);
+  console.log("getReq : ", path, collectionName, documentId, nodes);
   let coll = store.getCollection(collectionName);
   if (documentId) {
     coll = coll.get(documentId);
-    console.log("sending document : ", coll);
     return coll;
   }
   if (nodes && nodes.length > 0) {
     for (let node of nodes) {
       coll = coll[node];
     }
-    console.log("sending sub node : ", coll);
     return coll;
   }
-  console.log("sending collection : ", Array.from(coll.entries()));
 
   return Array.from(coll.entries()).map(([id, data]) => {
     return {
@@ -36,17 +33,17 @@ export function createCrudServer(store, pulsar) {
       usersForDataPoint[dataPointName] = new Set();
     }
     usersForDataPoint[dataPointName].add(userId);
-    console.log("users for data point : ", usersForDataPoint);
+    // console.log("users for data point : ", usersForDataPoint);
   });
 
   const getRegistredUsersForCollection = (collectionName) => {
-    console.log("users for data point : ", Array.from(usersForDataPoint[collectionName] || []));
+    // console.log("users for data point : ", Array.from(usersForDataPoint[collectionName] || []));
     return Array.from(usersForDataPoint[collectionName] || []);
   }
 
   for (let collectionName of store.collectionList.keys()) {
-    dataPoints[collectionName] = (userId) => {
-      return getCollection(store, collectionName);
+    dataPoints[collectionName] = (userId, path) => {
+      return getCollection(store, path);
     }
   }
 
@@ -118,8 +115,8 @@ export function createCrudServer(store, pulsar) {
       for (let collectionName in data) {
         if (!pulsar.dataSources[collectionName]) {
           pulsar.registerDataPoints({
-            [collectionName]: (userId) => {
-              return getCollection(store, collectionName);
+            [collectionName]: (userId, path) => {
+              return getCollection(store, path);
             }
           });
         }

@@ -41,7 +41,7 @@ export default {
     for (let userId of userList) {
       let datas = this.dataSources[pointName](userId, path);
       connectionManager.getConnection(userId).send(JSON.stringify({
-        type: pointName,
+        type: path,
         data: datas
       }));
     }

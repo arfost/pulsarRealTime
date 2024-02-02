@@ -5,14 +5,12 @@ export function getNewStore() {
     collectionList: new Map(),
 
     load(data) {
-      console.log("loading data : ", data);
       for (let collectionName in data) {
         this.collectionList.set(collectionName, new Map());
         for (let [id, doc] of data[collectionName]) {
           this.collectionList.get(collectionName).set(id, doc);
         }
       }
-      console.log("loaded data : ", this.collectionList);
     },
     save() {
       let save = {};
