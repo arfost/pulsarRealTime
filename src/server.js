@@ -1,7 +1,6 @@
 
 function getCollection(store, path) {
   let [collectionName, documentId, ...nodes] = path.split("/");
-  console.log("getReq : ", path, collectionName, documentId, nodes);
   let coll = store.getCollection(collectionName);
   if (documentId) {
     coll = coll.get(documentId);
@@ -61,6 +60,7 @@ export function createCrudServer(store, pulsar) {
       }
       store.updateDocumentInCollection(collectionName, documentId, documentData);
       pulsar.broadcastDataPoint(getRegistredUsersForCollection(collectionName), collectionName);
+      pulsar.broadcastDataPoint(getRegistredUsersForCollection([collectionName, documentId].join("/")), [collectionName, documentId].join("/"));
       return { collectionName, id: documentId}
     },
     deleteDoc(userId, { collectionName, documentId }) {
@@ -74,6 +74,7 @@ export function createCrudServer(store, pulsar) {
       }
       store.deleteDocumentInCollection(collectionName, documentId);
       pulsar.broadcastDataPoint(getRegistredUsersForCollection(collectionName), collectionName);
+      pulsar.broadcastDataPoint(getRegistredUsersForCollection([collectionName, documentId].join("/")), [collectionName, documentId].join("/"));
       return { collectionName, id: documentId}
     },
     createDoc(userId, { collectionName, documentData }) {
