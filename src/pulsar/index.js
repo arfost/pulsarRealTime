@@ -30,7 +30,8 @@ export default {
     }
   },
   
-  broadcastDataPoint(userList, pointName) {
+  broadcastDataPoint(userList, path) {
+    let pointName = path.split("/").shift();
     if (!this.dataSources[pointName]) {
       throw new Error(`No datasource for data point "${pointName}"`);
     }
@@ -38,7 +39,7 @@ export default {
       userList = [userList];
     }
     for (let userId of userList) {
-      let datas = this.dataSources[pointName](userId);
+      let datas = this.dataSources[pointName](userId, path);
       connectionManager.getConnection(userId).send(JSON.stringify({
         type: pointName,
         data: datas
