@@ -23,7 +23,7 @@ export default function (pulsarCrud) {
       <br>
       list of nodes in the system:
       <ul>
-        ${Array.from(pulsarCrud.collectionList.keys()).map(collectionName => `<li>${collectionName}</li>`).join("")}
+        ${Array.from(pulsarCrud.collectionList.keys()).map(collectionName => `<li><a href="/list?collection=${collectionName}">${collectionName}</a></li>`).join("")}
       </ul>
     </body>`
 }
