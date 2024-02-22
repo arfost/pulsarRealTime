@@ -10,7 +10,8 @@ export default function ({success, filename}) {
       save data to ${filename},
       ${success ? 
         `<h2>Success</h2>` : 
-        `<h2>Failure</h2>`}
+        `<h2>Failure</h2>`
+      }
 
       <a href="/main">Main</a>
     </body>`

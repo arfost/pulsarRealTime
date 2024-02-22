@@ -39,7 +39,7 @@ function newServer() {
     },
 
     broadcastDataPoint(userList, path) {
-      let pointName = path.split("/").shift();
+      const pointName = path.split("/").shift();
       if (!this.dataSources[pointName]) {
         throw new Error(`No datasource for data point "${pointName}"`);
       }
@@ -83,12 +83,12 @@ function newServer() {
     },
 
     _actionConsummer(message, socket) {
-      let userId = connectionManager.getUserId(socket);
+      const userId = connectionManager.getUserId(socket);
       try {
         if (!this.serverActions[message.name]) {
           throw new Error(`no server action named "${message.name}"`)
         }
-        let response = {
+        const response = {
           type: "actionResponse",
           data: this.serverActions[message.name](userId, message.params),
           actionId: message.actionId
@@ -96,7 +96,7 @@ function newServer() {
         socket.send(JSON.stringify(response));
       } catch (e) {
         console.warn('action erreur : ', e);
-        let response = {
+        const response = {
           type: "actionResponse",
           data: "error",
           actionId: message.actionId
@@ -110,7 +110,7 @@ function newServer() {
     },
 
     _dataConsummer(message, socket) {
-      let userId = connectionManager.getUserId(socket);
+      const userId = connectionManager.getUserId(socket);
       if (this._dataConsummerAddon) {
         this._dataConsummerAddon(userId, message.type);
       }
