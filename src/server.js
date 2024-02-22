@@ -1,3 +1,4 @@
+import { readFile, writeFile } from 'fs';
 
 function getCollection(store, path) {
   let [collectionName, documentId, ...nodes] = path.split("/");
@@ -108,6 +109,7 @@ export function createCrudServer(store, pulsar) {
   pulsar.registerAction(actions);
 
   return {
+    collectionList: store.collectionList,
     save() {
       return store.save();
     },
@@ -122,6 +124,26 @@ export function createCrudServer(store, pulsar) {
           });
         }
       }
+    },
+    saveToFile(fileName){
+      let data = store.save();
+      writeFile(`./saves/${fileName ? fileName : "data"}.json`, JSON.stringify(data, null, 4), (err) => {
+        if (err) {
+          console.error("couldn't save datas", err);
+        } else {
+          console.log('Save done');
+        }
+      });
+    },
+    loadFromFile(fileName){
+      readFile(`./saves/${fileName ? fileName : "data"}.json`, (err, data) => {
+        if (err) {
+          console.error("couldn't read data", err);
+        }else{
+          let datas = JSON.parse(data);
+          this.load(datas);
+        }
+      });
     }
   }
 }
