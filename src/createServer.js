@@ -6,6 +6,8 @@ export default function (args) {
   const certPath = args[args.indexOf("-c") + 1];
   const keyPath = args[args.indexOf("-k") + 1];
 
+  console.log("secure : ", secure, "certPath : ", certPath, "keyPath : ", keyPath);
+
   const server = secure ? createHttpsServer({ certPath, keyPath }) : createHttpServer();
   return server;
 }
