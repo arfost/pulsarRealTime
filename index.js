@@ -24,7 +24,13 @@ crudServ.loadFromFile(SAVE_NAME);
 
 initAdmin(server, crudServ);
 
-server.listen(8080);
+server.listen(8080, (err) => {
+  if (err) {
+    console.error("couldn't start server", err);
+  }else{
+    console.log('Server started on port 8080');
+  }
+});
 
 function writeSaveSync(name){
   let data = crudServ.save();
