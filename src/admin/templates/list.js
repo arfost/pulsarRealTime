@@ -1,16 +1,12 @@
-export default function (pulsarCrud, type) {
-  return `
-  <!DOCTYPE html>
-  <html>
-    <head>
-      <title>Admin</title>
-    </head>
-    <body>
-      <h1>Admin</h1>
-      list of ${type} in the system:,
+import base from "./base.js";
 
-      ${Array.from(pulsarCrud.collectionList.get(type)).map(element => `<pre>${JSON.stringify(element, null, 4)}</pre>`).join("")}
-      
-      <a href="/main">Main</a>
-    </body>`
+export default function (pulsarCrud, collection) {
+  return base(`
+    list of ${collection} in the system:,
+
+    ${Array.from(pulsarCrud.collectionList.get(collection)).map(element => `<div id="${element[0]}">
+                                                                        ${element[0]}
+                                                                        <span hx-get='/details?collection=${collection}&id=${element[0]}' hx-target='#${element[0]}'>open</span>
+                                                                      </div>`).join("")}
+  `)
 }
