@@ -50,14 +50,21 @@ export function createCrudServer(store, pulsar) {
   pulsar.registerDataPoints(dataPoints);
 
   let actions = {
+    createCollection(userId, collectionName) {
+      if (store.asCollection(collectionName)) {
+        throw new Error("Collection already exist");
+      }
+      store.createCollection(collectionName);
+      pulsar.registerDataPoints({
+        [collectionName]: (userId, path) => {
+          return getCollection(store, path);
+        }
+      });
+      return { collectionName };
+    },
     updateDoc(userId, { collectionName, documentId, documentData }) {
       if (!store.asCollection(collectionName)) {
-        store.createCollection(collectionName);
-        pulsar.registerDataPoints({
-          [collectionName]: (userId, path) => {
-            return getCollection(store, path);
-          }
-        });
+        this.createCollection(userId, collectionName);
       }
       store.updateDocumentInCollection(collectionName, documentId, documentData);
       pulsar.broadcastDataPoint(getRegistredUsersForCollection(collectionName), collectionName);
@@ -66,12 +73,7 @@ export function createCrudServer(store, pulsar) {
     },
     deleteDoc(userId, { collectionName, documentId }) {
       if (!store.asCollection(collectionName)) {
-        store.createCollection(collectionName);
-        pulsar.registerDataPoints({
-          [collectionName]: (userId, path) => {
-            return getCollection(store, path);
-          }
-        });
+        this.createCollection(userId, collectionName);
       }
       store.deleteDocumentInCollection(collectionName, documentId);
       pulsar.broadcastDataPoint(getRegistredUsersForCollection(collectionName), collectionName);
@@ -80,12 +82,7 @@ export function createCrudServer(store, pulsar) {
     },
     createDoc(userId, { collectionName, documentData }) {
       if (!store.asCollection(collectionName)) {
-        store.createCollection(collectionName);
-        pulsar.registerDataPoints({
-          [collectionName]: (userId, path) => {
-            return getCollection(store, path);
-          }
-        });
+        this.createCollection(userId, collectionName);
       }
       let id = store.createDocumentInCollection(collectionName, documentData);
       pulsar.broadcastDataPoint(getRegistredUsersForCollection(collectionName), collectionName);
@@ -93,12 +90,7 @@ export function createCrudServer(store, pulsar) {
     },
     deleteCollection(userId, collectionName) {
       if (!store.asCollection(collectionName)) {
-        store.createCollection(collectionName);
-        pulsar.registerDataPoints({
-          [collectionName]: (userId, path) => {
-            return getCollection(store, path);
-          }
-        });
+        throw new Error("Collection doesn't exist");
       }
       store.deleteCollection(collectionName);
       pulsar.broadcastDataPoint(getRegistredUsersForCollection(collectionName), collectionName);
