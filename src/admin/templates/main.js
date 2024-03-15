@@ -8,6 +8,7 @@ export default function (pulsarCrud) {
       <br/>
       <div hx-trigger="load" hx-get="/forceLoad"></div>
       <br/>
+      <div hx-trigger="load" hx-get="/fileManagement"></div>
       <br/>
       list of nodes in the system:
       <ul>

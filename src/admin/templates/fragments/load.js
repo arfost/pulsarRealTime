@@ -1,4 +1,4 @@
-export default function ({success, filename}) {
+export default function ({success, filename, fileList}) {
   if(filename){
     return `
     <div hx-target="this" hx-swap="outerHTML">
@@ -12,8 +12,10 @@ export default function ({success, filename}) {
   }else{
     return `
     <form hx-get="/forceLoad" hx-target="this" hx-swap="outerHTML">
-      <input type="text" name="filename" value="data" />
-      <button type="submit">Load</button>
+      <select name="filename">
+        ${fileList.map(filename => `<option value="${filename}">${filename}</option>`).join("")}
+      </select>
+      <button type="submit">load in base</button>
     </form>`;
   }
 }

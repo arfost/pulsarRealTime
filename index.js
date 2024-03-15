@@ -20,7 +20,7 @@ const store = getNewStore();
 
 const crudServ = createCrudServer(store, pulServ);
 
-crudServ.loadFromFile(SAVE_NAME);
+crudServ.loadFromFile(`${SAVE_NAME}.json`);
 
 initAdmin(server, crudServ);
 
@@ -43,12 +43,13 @@ function writeSaveSync(name){
   });
 }
 
-function cleanUpServer(eventType){
+function cleanUpServer(eventType, e){
   console.log(`cleaning up server on event : ${eventType}`);
+  console.error(e);
   writeSaveSync(SAVE_NAME);
   process.exit();
 }
 
 [`SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach((eventType) => {
-  process.on(eventType, cleanUpServer.bind(null, eventType));
+  process.on(eventType, e=>cleanUpServer(eventType, e));
 })

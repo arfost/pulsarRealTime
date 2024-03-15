@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'fs';
+import { promises as fs } from 'fs';
 
 function getCollection(store, path) {
   let [collectionName, documentId, ...nodes] = path.split("/");
@@ -69,7 +69,7 @@ export function createCrudServer(store, pulsar) {
       store.updateDocumentInCollection(collectionName, documentId, documentData);
       pulsar.broadcastDataPoint(getRegistredUsersForCollection(collectionName), collectionName);
       pulsar.broadcastDataPoint(getRegistredUsersForCollection([collectionName, documentId].join("/")), [collectionName, documentId].join("/"));
-      return { collectionName, id: documentId}
+      return { collectionName, id: documentId }
     },
     deleteDoc(userId, { collectionName, documentId }) {
       if (!store.asCollection(collectionName)) {
@@ -78,7 +78,7 @@ export function createCrudServer(store, pulsar) {
       store.deleteDocumentInCollection(collectionName, documentId);
       pulsar.broadcastDataPoint(getRegistredUsersForCollection(collectionName), collectionName);
       pulsar.broadcastDataPoint(getRegistredUsersForCollection([collectionName, documentId].join("/")), [collectionName, documentId].join("/"));
-      return { collectionName, id: documentId}
+      return { collectionName, id: documentId }
     },
     createDoc(userId, { collectionName, documentData }) {
       if (!store.asCollection(collectionName)) {
@@ -86,7 +86,7 @@ export function createCrudServer(store, pulsar) {
       }
       let id = store.createDocumentInCollection(collectionName, documentData);
       pulsar.broadcastDataPoint(getRegistredUsersForCollection(collectionName), collectionName);
-      return { collectionName, id}
+      return { collectionName, id }
     },
     deleteCollection(userId, collectionName) {
       if (!store.asCollection(collectionName)) {
@@ -117,25 +117,19 @@ export function createCrudServer(store, pulsar) {
         }
       }
     },
-    saveToFile(fileName){
+    async saveToFile(fileName) {
       let data = store.save();
-      writeFile(`./saves/${fileName ? fileName : "data"}.json`, JSON.stringify(data, null, 4), (err) => {
-        if (err) {
-          console.error("couldn't save datas", err);
-        } else {
-          console.log('Save done');
-        }
-      });
+      await fs.writeFile(`./saves/${fileName ? fileName : "data"}.json`, JSON.stringify(data, null, 4));
+      console.log('Save done');
     },
-    loadFromFile(fileName){
-      readFile(`./saves/${fileName ? fileName : "data"}.json`, (err, data) => {
-        if (err) {
-          console.error("couldn't read data", err);
-        }else{
-          let datas = JSON.parse(data);
-          this.load(datas);
-        }
-      });
+    async loadFromFile(fileName) {
+      const data = await fs.readFile(`./saves/${fileName ? fileName : "data.json"}`)
+      let datas = JSON.parse(data);
+      this.load(datas);
+    },
+    async fileList() {
+      const files = await fs.readdir("./saves");
+      return files;
     }
   }
 }
