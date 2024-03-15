@@ -6,7 +6,7 @@ export default function ({success, filename, fileList}) {
       ${success ? 
         `<h2>Success</h2>` : 
         `<h2>Failure</h2>`}
-        <button hx-get="/forceSave">retour</button>
+        <button hx-get="/forceLoad">retour</button>
     </div>`
       
   }else{
