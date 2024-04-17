@@ -46,16 +46,22 @@ function newServer() {
       if (!Array.isArray(userList)) {
         userList = [userList];
       }
+      console.log("broadcast : ", userList, path);
       for (let userId of userList) {
-        let datas = this.dataSources[pointName](userId, path);
-        connectionManager.getConnection(userId).send(JSON.stringify({
-          type: path,
-          data: datas
-        }));
+        try{
+          let datas = this.dataSources[pointName](userId, path);
+          connectionManager.getConnection(userId).send(JSON.stringify({
+            type: path,
+            data: datas
+          }));
+        }catch(e){
+          console.error(e);
+        }        
       }
     },
 
     _closeConnection(socket) {
+      console.log("connection close", connectionManager.getUserId(socket));
       connectionManager.removeConnection(socket);
     },
 
